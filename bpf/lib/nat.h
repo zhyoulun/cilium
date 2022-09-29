@@ -108,6 +108,7 @@ struct ipv4_nat_target {
 	const __u16 min_port; /* host endianness */
 	const __u16 max_port; /* host endianness */
 	bool src_from_world;
+	bool egress_gateway;
 };
 
 #if defined(ENABLE_IPV4) && defined(ENABLE_NODEPORT)
@@ -273,7 +274,7 @@ static __always_inline int snat_v4_track_local(struct __ctx_buff *ctx,
 	if (state && state->common.host_local) {
 		needs_ct = true;
 	} else if (!state && dir == NAT_DIR_EGRESS) {
-		if (tuple->saddr == target->addr)
+		if (tuple->saddr == target->addr || target->egress_gateway)
 			needs_ct = true;
 	}
 	if (!needs_ct)
