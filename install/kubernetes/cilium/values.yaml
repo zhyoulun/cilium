@@ -1449,6 +1449,7 @@ egressGateway:
   # -- Install egress gateway IP rules and routes in order to properly steer
   # egress gateway traffic to the correct ENI interface
   installRoutes: false
+  maxPolicyEntries: 16535
 
 vtep:
 # -- Enables VXLAN Tunnel Endpoint (VTEP) Integration (beta) to allow

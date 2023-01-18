@@ -831,6 +831,9 @@ data:
 {{- if .Values.egressGateway.installRoutes }}
   install-egress-gateway-routes: "true"
 {{- end }}
+{{- if .Values.egressGateway.maxPolicyEntries }}
+  max-policy-entrics: {{ .Values.egressGateway.maxPolicyEntries }}
+{{- end }}
 
 {{- if hasKey .Values "vtep" }}
   enable-vtep: {{ .Values.vtep.enabled | quote }}

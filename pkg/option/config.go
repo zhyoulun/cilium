@@ -616,6 +616,9 @@ const (
 	// PolicyMapMax defines the maximum policy map limit.
 	PolicyMapMax = 1 << 16
 
+	// EgressPolicyMax defines the maximum egress policy map limit.
+	EgressPolicyMax = 1 << 14
+
 	// FragmentsMapMin defines the minimum fragments map limit.
 	FragmentsMapMin = 1 << 8
 
@@ -634,6 +637,10 @@ const (
 	// SockRevNatEntriesName configures max entries for BPF sock reverse nat
 	// entries.
 	SockRevNatEntriesName = "bpf-sock-rev-map-max"
+
+	// EgressGatewayPolicyEntriesName configures max entries for egress gateway's policy
+	// map.
+	EgressGatewayPolicyEntriesName = "egress-gw-policy-map-max"
 
 	// LogSystemLoadConfigName is the name of the option to enable system
 	// load loggging
@@ -1469,6 +1476,9 @@ type DaemonConfig struct {
 	// SockRevNatEntries is the maximum number of sock rev nat mappings
 	// allowed in the BPF rev nat table
 	SockRevNatEntries int
+
+	// EgressPolicyEntries is the maximum number of egress gateway's policy map.
+	EgressPolicyEntries int
 
 	// DisableCiliumEndpointCRD disables the use of CiliumEndpoint CRD
 	DisableCiliumEndpointCRD bool
@@ -2881,6 +2891,7 @@ func (c *DaemonConfig) Populate(vp *viper.Viper) {
 	c.EnableHostPort = vp.GetBool(EnableHostPort)
 	c.EnableHostLegacyRouting = vp.GetBool(EnableHostLegacyRouting)
 	c.MaglevTableSize = vp.GetInt(MaglevTableSize)
+	c.EgressPolicyEntries = vp.GetInt(EgressPolicyMapName)
 	c.MaglevHashSeed = vp.GetString(MaglevHashSeed)
 	c.NodePortBindProtection = vp.GetBool(NodePortBindProtection)
 	c.EnableAutoProtectNodePortRange = vp.GetBool(EnableAutoProtectNodePortRange)
@@ -3573,6 +3584,7 @@ func (c *DaemonConfig) calculateBPFMapSizes(vp *viper.Viper) error {
 	c.NeighMapEntriesGlobal = vp.GetInt(NeighMapEntriesGlobalName)
 	c.PolicyMapEntries = vp.GetInt(PolicyMapEntriesName)
 	c.SockRevNatEntries = vp.GetInt(SockRevNatEntriesName)
+	c.EgressPolicyEntries = vp.GetInt(EgressPolicyMapName)
 	c.LBMapEntries = vp.GetInt(LBMapEntriesName)
 	c.LBServiceMapEntries = vp.GetInt(LBServiceMapMaxEntries)
 	c.LBBackendMapEntries = vp.GetInt(LBBackendMapMaxEntries)

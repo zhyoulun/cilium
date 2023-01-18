@@ -824,6 +824,9 @@ func initializeFlags() {
 	flags.Float64(option.MapEntriesGlobalDynamicSizeRatioName, 0.0025, "Ratio (0.0-1.0] of total system memory to use for dynamic sizing of CT, NAT and policy BPF maps")
 	option.BindEnv(Vp, option.MapEntriesGlobalDynamicSizeRatioName)
 
+	flags.Int(option.EgressPolicyMapName, option.EgressPolicyMax, "Maximum number of entries egress gateway's policy map")
+	option.BindEnv(Vp, option.EgressPolicyMapName)
+
 	flags.String(option.CMDRef, "", "Path to cmdref output directory")
 	flags.MarkHidden(option.CMDRef)
 	option.BindEnv(Vp, option.CMDRef)
