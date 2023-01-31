@@ -616,9 +616,6 @@ const (
 	// PolicyMapMax defines the maximum policy map limit.
 	PolicyMapMax = 1 << 16
 
-	// EgressPolicyMax defines the maximum egress policy map limit.
-	EgressPolicyMax = 1 << 14
-
 	// FragmentsMapMin defines the minimum fragments map limit.
 	FragmentsMapMin = 1 << 8
 
@@ -640,7 +637,7 @@ const (
 
 	// EgressGatewayPolicyEntriesName configures max entries for egress gateway's policy
 	// map.
-	EgressGatewayPolicyEntriesName = "egress-gw-policy-map-max"
+	EgressGatewayPolicyMapEntriesName = "egress-gateway-policy-map-max"
 
 	// LogSystemLoadConfigName is the name of the option to enable system
 	// load loggging
@@ -1477,8 +1474,9 @@ type DaemonConfig struct {
 	// allowed in the BPF rev nat table
 	SockRevNatEntries int
 
-	// EgressPolicyEntries is the maximum number of egress gateway's policy map.
-	EgressPolicyEntries int
+	// EgressGatewayPolicyMapEntries is the maximum number of entries
+	// allowed in the BPF egress gateway policy map.
+	EgressGatewayPolicyMapEntries int
 
 	// DisableCiliumEndpointCRD disables the use of CiliumEndpoint CRD
 	DisableCiliumEndpointCRD bool
@@ -2891,7 +2889,6 @@ func (c *DaemonConfig) Populate(vp *viper.Viper) {
 	c.EnableHostPort = vp.GetBool(EnableHostPort)
 	c.EnableHostLegacyRouting = vp.GetBool(EnableHostLegacyRouting)
 	c.MaglevTableSize = vp.GetInt(MaglevTableSize)
-	c.EgressPolicyEntries = vp.GetInt(EgressPolicyMapName)
 	c.MaglevHashSeed = vp.GetString(MaglevHashSeed)
 	c.NodePortBindProtection = vp.GetBool(NodePortBindProtection)
 	c.EnableAutoProtectNodePortRange = vp.GetBool(EnableAutoProtectNodePortRange)
@@ -2955,6 +2952,7 @@ func (c *DaemonConfig) Populate(vp *viper.Viper) {
 	c.EnableIPMasqAgent = vp.GetBool(EnableIPMasqAgent)
 	c.EnableIPv4EgressGateway = vp.GetBool(EnableIPv4EgressGateway)
 	c.InstallEgressGatewayRoutes = vp.GetBool(InstallEgressGatewayRoutes)
+	c.EgressGatewayPolicyMapEntries = vp.GetInt(EgressGatewayPolicyMapEntriesName)
 	c.EnableEnvoyConfig = vp.GetBool(EnableEnvoyConfig)
 	c.EnableIngressController = vp.GetBool(EnableIngressController)
 	c.EnableGatewayAPI = vp.GetBool(EnableGatewayAPI)
@@ -3584,7 +3582,6 @@ func (c *DaemonConfig) calculateBPFMapSizes(vp *viper.Viper) error {
 	c.NeighMapEntriesGlobal = vp.GetInt(NeighMapEntriesGlobalName)
 	c.PolicyMapEntries = vp.GetInt(PolicyMapEntriesName)
 	c.SockRevNatEntries = vp.GetInt(SockRevNatEntriesName)
-	c.EgressPolicyEntries = vp.GetInt(EgressPolicyMapName)
 	c.LBMapEntries = vp.GetInt(LBMapEntriesName)
 	c.LBServiceMapEntries = vp.GetInt(LBServiceMapMaxEntries)
 	c.LBBackendMapEntries = vp.GetInt(LBBackendMapMaxEntries)

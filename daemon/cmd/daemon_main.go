@@ -64,6 +64,7 @@ import (
 	"github.com/cilium/cilium/pkg/maglev"
 	"github.com/cilium/cilium/pkg/maps/ctmap"
 	"github.com/cilium/cilium/pkg/maps/ctmap/gc"
+	"github.com/cilium/cilium/pkg/maps/egressmap"
 	"github.com/cilium/cilium/pkg/maps/lbmap"
 	"github.com/cilium/cilium/pkg/maps/nat"
 	"github.com/cilium/cilium/pkg/maps/neighborsmap"
@@ -665,6 +666,9 @@ func initializeFlags() {
 	flags.Bool(option.InstallEgressGatewayRoutes, false, "Install egress gateway IP rules and routes in order to properly steer egress gateway traffic to the correct ENI interface")
 	option.BindEnv(Vp, option.InstallEgressGatewayRoutes)
 
+	flags.Int(option.EgressGatewayPolicyMapEntriesName, egressmap.MaxPolicyEntries, "Maximum number of entries in egress gateway policy map")
+	option.BindEnv(Vp, option.EgressGatewayPolicyMapEntriesName)
+
 	flags.Bool(option.EnableEnvoyConfig, false, "Enable Envoy Config CRDs")
 	option.BindEnv(Vp, option.EnableEnvoyConfig)
 
@@ -823,9 +827,6 @@ func initializeFlags() {
 
 	flags.Float64(option.MapEntriesGlobalDynamicSizeRatioName, 0.0025, "Ratio (0.0-1.0] of total system memory to use for dynamic sizing of CT, NAT and policy BPF maps")
 	option.BindEnv(Vp, option.MapEntriesGlobalDynamicSizeRatioName)
-
-	flags.Int(option.EgressPolicyMapName, option.EgressPolicyMax, "Maximum number of entries egress gateway's policy map")
-	option.BindEnv(Vp, option.EgressPolicyMapName)
 
 	flags.String(option.CMDRef, "", "Path to cmdref output directory")
 	flags.MarkHidden(option.CMDRef)

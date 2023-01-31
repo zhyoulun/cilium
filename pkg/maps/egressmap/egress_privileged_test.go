@@ -5,7 +5,6 @@ package egressmap
 
 import (
 	"errors"
-	"github.com/cilium/cilium/pkg/option"
 	"net"
 	"testing"
 
@@ -36,7 +35,7 @@ func (k *EgressMapTestSuite) SetUpSuite(c *C) {
 }
 
 func (k *EgressMapTestSuite) TestEgressMap(c *C) {
-	err := initEgressPolicyMap(PolicyMapName, option.EgressPolicyMax, true)
+	err := initEgressPolicyMap(PolicyMapName, MaxPolicyEntries, true)
 	c.Assert(err, IsNil)
 	defer EgressPolicyMap.Unpin()
 

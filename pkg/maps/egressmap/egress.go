@@ -5,6 +5,8 @@ package egressmap
 
 const (
 	PolicyMapName = "cilium_egress_gw_policy_v4"
+
+	MaxPolicyEntries = 1 << 14
 )
 
 var (
