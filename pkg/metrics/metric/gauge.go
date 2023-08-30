@@ -96,8 +96,22 @@ func (g *gauge) SetToCurrentTime() {
 }
 
 func NewGaugeVec(opts GaugeOpts, labelNames []string) DeletableVec[Gauge] {
-	return &gaugeVec{
+	gv := &gaugeVec{
 		GaugeVec: prometheus.NewGaugeVec(opts.toPrometheus(), labelNames),
+		metric: metric{
+			enabled: !opts.Disabled,
+			opts:    Opts(opts),
+		},
+	}
+	gv.forEachLabelVector(func(vs []string) {
+		gv.WithLabelValues(vs...)
+	})
+	return gv
+}
+
+func NewGaugeVecWithLabels(opts GaugeOpts, labels Labels) DeletableVec[Gauge] {
+	return &gaugeVec{
+		GaugeVec: prometheus.NewGaugeVec(opts.toPrometheus(), labels.labelNames()),
 		metric: metric{
 			enabled: !opts.Disabled,
 			opts:    Opts(opts),
@@ -167,6 +181,7 @@ func (gv *gaugeVec) With(labels prometheus.Labels) Gauge {
 }
 
 func (gv *gaugeVec) WithLabelValues(lvs ...string) Gauge {
+	gv.checkLabelValues(lvs...)
 	if !gv.enabled {
 		return &gauge{
 			metric: metric{enabled: false},

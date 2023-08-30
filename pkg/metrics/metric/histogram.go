@@ -81,6 +81,20 @@ func NewHistogramVec(opts HistogramOpts, labelNames []string) Vec[Observer] {
 	}
 }
 
+func NewHistogramVecWithLabels(opts HistogramOpts, labels Labels) Vec[Observer] {
+	hv := &histogramVec{
+		ObserverVec: prometheus.NewHistogramVec(opts.toPrometheus(), labels.labelNames()),
+		metric: metric{
+			enabled: !opts.Disabled,
+			opts:    opts.opts(),
+		},
+	}
+	hv.forEachLabelVector(func(vs []string) {
+		hv.WithLabelValues(vs...)
+	})
+	return hv
+}
+
 type histogramVec struct {
 	prometheus.ObserverVec
 	metric
@@ -143,6 +157,7 @@ func (cv *histogramVec) With(labels prometheus.Labels) Observer {
 }
 
 func (cv *histogramVec) WithLabelValues(lvs ...string) Observer {
+	cv.checkLabelValues(lvs...)
 	if !cv.enabled {
 		return &observer{
 			metric: metric{enabled: false},
