@@ -242,8 +242,25 @@ jobs:
       - name: Run Sanity check (external)
         timeout-minutes: 5
         run: |
+          set +e
           lb=$(kubectl get ingress basic-ingress -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
-          curl -s -v --connect-timeout 5 --max-time 20 --retry 3 --fail -- http://"$lb"
+          
+          # It may take some time after the service gets created for it to handle traffic.
+          # An un-ready service will return an ICMP so we retry a few times since the --retry
+          # flag only retries on connection timeouts.
+          curl -s -v --connect-timeout 5 --max-time 20 --fail -- http://"$lb"
+          if [ $? -ne 0 ]; then
+            sleep 5s
+            curl -s -v --connect-timeout 5 --max-time 20 --fail -- http://"$lb"
+            if [ $? -ne 0 ]; then
+              sleep 5s
+              curl -s -v --connect-timeout 5 --max-time 20 --fail -- http://"$lb"
+              if [ $? -ne 0 ]; then
+                exit $?
+              fi
+            fi
+          fi
+          # By now the service should be up, no need to do the manual retries for the second request
           curl -s -v --connect-timeout 5 --max-time 20 --retry 3 --fail -- http://"$lb"/details/1
 
       - name: Run Sanity check (internal to NodePort)
