@@ -19,6 +19,7 @@ import (
 	fakecni "github.com/cilium/cilium/daemon/cmd/cni/fake"
 	"github.com/cilium/cilium/pkg/controller"
 	fakeDatapath "github.com/cilium/cilium/pkg/datapath/fake"
+	"github.com/cilium/cilium/pkg/datapath/linux/bandwidth"
 	datapath "github.com/cilium/cilium/pkg/datapath/types"
 	"github.com/cilium/cilium/pkg/endpoint"
 	"github.com/cilium/cilium/pkg/envoy"
@@ -155,6 +156,7 @@ func (ds *DaemonSuite) SetUpTest(c *C) {
 			func() *option.DaemonConfig { return option.Config },
 			func() cnicell.CNIConfigManager { return &fakecni.FakeCNIConfigManager{} },
 			func() ctmapgc.Enabler { return ctmapgc.NewFake() },
+			func() bandwidth.ManagerInterface { return &bandwidth.Manager{} },
 		),
 		fakeDatapath.Cell,
 		monitorAgent.Cell,

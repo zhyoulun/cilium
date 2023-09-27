@@ -12,7 +12,9 @@ import (
 	"github.com/cilium/cilium/daemon/cmd"
 	cnicell "github.com/cilium/cilium/daemon/cmd/cni"
 	fakecni "github.com/cilium/cilium/daemon/cmd/cni/fake"
+	"github.com/cilium/cilium/pkg/datapath/fake"
 	fakeDatapath "github.com/cilium/cilium/pkg/datapath/fake"
+	"github.com/cilium/cilium/pkg/datapath/linux/bandwidth"
 	fqdnproxy "github.com/cilium/cilium/pkg/fqdn/proxy"
 	"github.com/cilium/cilium/pkg/hive"
 	"github.com/cilium/cilium/pkg/hive/cell"
@@ -67,6 +69,7 @@ func (h *agentHandle) setupCiliumAgentHive(clientset k8sClient.Clientset, extraC
 			func() *option.DaemonConfig { return option.Config },
 			func() cnicell.CNIConfigManager { return &fakecni.FakeCNIConfigManager{} },
 			func() gc.Enabler { return gc.NewFake() },
+			func() bandwidth.ManagerInterface { return &fake.BandwidthManager{} },
 		),
 		fakeDatapath.Cell,
 		monitorAgent.Cell,
