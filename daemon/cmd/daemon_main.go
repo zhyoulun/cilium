@@ -1194,6 +1194,7 @@ func initDaemonConfig(vp *viper.Viper) {
 		lbmap.SizeofSockRevNat6Key+lbmap.SizeofSockRevNat6Value)
 
 	option.Config.Populate(vp)
+
 	time.MaxInternalTimerDelay = vp.GetDuration(option.MaxInternalTimerDelay)
 }
 
