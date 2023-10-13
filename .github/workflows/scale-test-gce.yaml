@@ -3,6 +3,9 @@ name: Scale Test GCE
 on:
   schedule:
     - cron: '39 0 * * 1,4'
+  push:
+    branches:
+      - marseel-100-node-scale-test-cl2
 
 permissions:
   # To be able to access the repository with actions/checkout
@@ -64,7 +67,7 @@ jobs:
       - name: Set up job variables
         id: vars
         run: |
-          SHA="${{ github.sha }}"
+          SHA="cc2051eec0ba5e57842d8a7d4b4b33f31b12509f"
 
           # Setup Cilium install options
           CILIUM_INSTALL_DEFAULTS="${{ steps.default_vars.outputs.cilium_install_defaults }} \
