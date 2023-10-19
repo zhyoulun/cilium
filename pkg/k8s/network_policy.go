@@ -4,6 +4,7 @@
 package k8s
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/cilium/cilium/pkg/annotation"
@@ -23,6 +24,7 @@ const (
 )
 
 var (
+	ErrEndPortUnsupported         = errors.New("EndPort is not currently supported by Cilium")
 	allowAllNamespacesRequirement = slim_metav1.LabelSelectorRequirement{
 		Key:      k8sConst.PodNamespaceLabel,
 		Operator: slim_metav1.LabelSelectorOpExists,
@@ -161,7 +163,10 @@ func ParseNetworkPolicy(np *slim_networkingv1.NetworkPolicy) (api.Rules, error) 
 
 		// We apply the ports to all rules generated from the From section
 		if iRule.Ports != nil && len(iRule.Ports) > 0 {
-			toPorts := parsePorts(iRule.Ports)
+			toPorts, err := parsePorts(iRule.Ports)
+			if err != nil {
+				return api.Rules{}, fmt.Errorf("%w in network policy: %s", err, np.String())
+			}
 			for i := range fromRules {
 				fromRules[i].ToPorts = toPorts
 			}
@@ -204,7 +209,10 @@ func ParseNetworkPolicy(np *slim_networkingv1.NetworkPolicy) (api.Rules, error) 
 
 		// We apply the ports to all rules generated from the To section
 		if eRule.Ports != nil && len(eRule.Ports) > 0 {
-			toPorts := parsePorts(eRule.Ports)
+			toPorts, err := parsePorts(eRule.Ports)
+			if err != nil {
+				return api.Rules{}, fmt.Errorf("%w in network policy: %s", err, np.String())
+			}
 			for i := range toRules {
 				toRules[i].ToPorts = toPorts
 			}
@@ -264,9 +272,12 @@ func ipBlockToCIDRRule(block *slim_networkingv1.IPBlock) api.CIDRRule {
 }
 
 // parsePorts converts list of K8s NetworkPolicyPorts to Cilium PortRules.
-func parsePorts(ports []slim_networkingv1.NetworkPolicyPort) []api.PortRule {
+func parsePorts(ports []slim_networkingv1.NetworkPolicyPort) ([]api.PortRule, error) {
 	portRules := []api.PortRule{}
 	for _, port := range ports {
+		if port.EndPort != nil {
+			return portRules, ErrEndPortUnsupported
+		}
 		protocol := api.ProtoTCP
 		if port.Protocol != nil {
 			protocol, _ = api.ParseL4Proto(string(*port.Protocol))
@@ -286,5 +297,5 @@ func parsePorts(ports []slim_networkingv1.NetworkPolicyPort) []api.PortRule {
 		portRules = append(portRules, portRule)
 	}
 
-	return portRules
+	return portRules, nil
 }

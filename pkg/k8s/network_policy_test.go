@@ -684,9 +684,10 @@ func (s *K8sSuite) TestParseNetworkPolicyEmptyPort(c *C) {
 }
 
 func (s *K8sSuite) TestParsePorts(c *C) {
-	rules := parsePorts([]slim_networkingv1.NetworkPolicyPort{
+	rules, err := parsePorts([]slim_networkingv1.NetworkPolicyPort{
 		{},
 	})
+	c.Assert(err, IsNil)
 	c.Assert(len(rules), Equals, 1)
 	c.Assert(len(rules[0].Ports), Equals, 1)
 	c.Assert(rules[0].Ports[0].Port, Equals, "0")
@@ -1880,4 +1881,50 @@ func (s *K8sSuite) TestIPBlockToCIDRRule(c *C) {
 			c.Assert(cidrRule.ExceptCIDRs, checker.DeepEquals, exceptCIDRs)
 		}
 	}
+}
+
+func (s *K8sSuite) TestParseNetworkPolicyWithEndPort(c *C) {
+
+	// Rule with multiple selectors in egress and ingress
+	ex1 := []byte(`{
+"kind":"NetworkPolicy",
+"apiVersion":"networking.k8s.io/v1",
+"metadata":{
+  "name":"ingress-multiple-selectors"
+},
+"spec":{
+  "podSelector":{
+    "matchLabels":{
+      "role":"backend"
+    }
+  },
+  "egress":[
+    {
+      "ports":[
+        {
+          "protocol":"TCP",
+          "port":5432,
+          "endPort":5433
+        }
+      ],
+      "to":[
+        {
+          "podSelector":{
+            "matchLabels":{
+              "app":"db1"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
+}`)
+	np := slim_networkingv1.NetworkPolicy{}
+	err := json.Unmarshal(ex1, &np)
+	c.Assert(err, IsNil)
+
+	_, err = ParseNetworkPolicy(&np)
+	c.Assert(err, NotNil)
+	c.Assert(err, ErrorMatches, ErrEndPortUnsupported.Error()+".*")
 }
